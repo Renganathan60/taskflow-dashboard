@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TaskFlow — Smart To-Do List</title>
+    <meta name="description" content="TaskFlow is a professional to-do list dashboard to add, edit, filter and track tasks with localStorage persistence." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <div class="bg-blobs" aria-hidden="true">
+      <span class="blob blob-a"></span>
+      <span class="blob blob-b"></span>
+      <span class="blob blob-c"></span>
+    </div>
+    <div class="cursor-glow" id="cursorGlow" aria-hidden="true"></div>
+
+    <header class="site-header">
+      <div class="container header-inner">
+        <div class="brand">
+          <div class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 11l3 3L22 4" />
+              <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+            </svg>
+          </div>
+          <div>
+            <h1 class="brand-name">TaskFlow</h1>
+            <p class="brand-sub">Stay organized. Get things done.</p>
+          </div>
+        </div>
+        <div class="header-right">
+          <span class="today" id="todayDate"></span>
+          <div class="avatar" aria-label="Profile: Renganathan S" title="Renganathan S">RS</div>
+        </div>
+      </div>
+    </header>
+
+    <main class="container main">
+      <section class="greeting">
+        <h2 id="greetingText">Good morning 👋</h2>
+        <p>Let's get things done.</p>
+      </section>
+
+      <section class="stats" aria-label="Task statistics">
+        <article class="card stat">
+          <p class="stat-label">Total Tasks</p>
+          <p class="stat-value" id="statTotal">0</p>
+        </article>
+        <article class="card stat">
+          <p class="stat-label">Completed</p>
+          <p class="stat-value success" id="statCompleted">0</p>
+        </article>
+        <article class="card stat">
+          <p class="stat-label">Pending</p>
+          <p class="stat-value warn" id="statPending">0</p>
+        </article>
+        <article class="card stat">
+          <p class="stat-label">Progress</p>
+          <p class="stat-value accent" id="statProgress">0%</p>
+        </article>
+      </section>
+
+      <div class="grid">
+        <section class="card form-card" aria-labelledby="addTaskHeading">
+          <h3 id="addTaskHeading">Add a task</h3>
+          <form id="taskForm" novalidate>
+            <div class="field">
+              <label for="title">Task title</label>
+              <input id="title" name="title" type="text" placeholder="What needs to be done?" autocomplete="off" aria-describedby="titleError" />
+              <p class="error" id="titleError" role="alert"></p>
+            </div>
+            <div class="field">
+              <label for="description">Description (optional)</label>
+              <textarea id="description" name="description" rows="3" placeholder="Add a short description..."></textarea>
+            </div>
+            <div class="field-row">
+              <div class="field">
+                <label for="priority">Priority</label>
+                <select id="priority" name="priority">
+                  <option value="low">Low</option>
+                  <option value="medium" selected>Medium</option>
+                  <option value="high">High</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="dueDate">Due date (optional)</label>
+                <input id="dueDate" name="dueDate" type="date" />
+              </div>
+            </div>
+            <button class="btn btn-primary btn-block" type="submit" id="addBtn">+ Add Task</button>
+          </form>
+        </section>
+
+        <div class="right-col">
+          <section class="card progress-card" aria-labelledby="progressHeading">
+            <h3 id="progressHeading">Today's Progress</h3>
+            <div class="progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="progressBar">
+              <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <p class="progress-meta"><strong id="progressPct">0%</strong> — <span id="progressText">0 of 0 tasks completed</span></p>
+          </section>
+
+          <section class="card list-card" aria-labelledby="tasksHeading">
+            <div class="list-head">
+              <h3 id="tasksHeading">My Tasks</h3>
+              <div class="search-wrap">
+                <input type="search" id="search" placeholder="Search tasks..." aria-label="Search tasks" />
+              </div>
+            </div>
+
+            <div class="toolbar">
+              <div class="chips" role="group" aria-label="Filter by status">
+                <button class="chip is-active" data-status="all" type="button">All</button>
+                <button class="chip" data-status="active" type="button">Active</button>
+                <button class="chip" data-status="completed" type="button">Completed</button>
+              </div>
+              <div class="selects">
+                <label class="sr-only" for="priorityFilter">Filter by priority</label>
+                <select id="priorityFilter">
+                  <option value="all">All priorities</option>
+                  <option value="high">High</option>
+                  <option value="medium">Medium</option>
+                  <option value="low">Low</option>
+                </select>
+                <label class="sr-only" for="sortBy">Sort tasks</label>
+                <select id="sortBy">
+                  <option value="newest">Newest</option>
+                  <option value="oldest">Oldest</option>
+                  <option value="due">Due date</option>
+                  <option value="priority">Priority</option>
+                </select>
+              </div>
+            </div>
+
+            <ul class="task-list" id="taskList"></ul>
+            <div class="empty" id="emptyState" hidden>
+              <div class="empty-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="4" width="18" height="17" rx="3" />
+                  <path d="M8 2v4M16 2v4M7 12h10M7 16h6" />
+                </svg>
+              </div>
+              <h4 id="emptyTitle">No tasks yet</h4>
+              <p id="emptyText">Add your first task and start getting things done.</p>
+              <button class="btn btn-primary" type="button" id="emptyAddBtn">+ Add Task</button>
+            </div>
+          </section>
+        </div>
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container">
+        <p>TaskFlow — Built with HTML, CSS &amp; JavaScript</p>
+        <p class="muted">CodeOrbit Tech Internship — Task 2</p>
+      </div>
+    </footer>
+
+    <!-- Edit modal -->
+    <div class="modal-backdrop" id="editModal" hidden>
+      <div class="modal card" role="dialog" aria-modal="true" aria-labelledby="editHeading">
+        <h3 id="editHeading">Edit task</h3>
+        <form id="editForm" novalidate>
+          <div class="field">
+            <label for="editTitle">Task title</label>
+            <input id="editTitle" type="text" placeholder="What needs to be done?" />
+            <p class="error" id="editTitleError" role="alert"></p>
+          </div>
+          <div class="field">
+            <label for="editDescription">Description</label>
+            <textarea id="editDescription" rows="3" placeholder="Add a short description..."></textarea>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label for="editPriority">Priority</label>
+              <select id="editPriority">
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="editDueDate">Due date</label>
+              <input id="editDueDate" type="date" />
+            </div>
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="btn btn-ghost" id="editCancel">Cancel</button>
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Delete confirm -->
+    <div class="modal-backdrop" id="deleteModal" hidden>
+      <div class="modal card modal-sm" role="alertdialog" aria-modal="true" aria-labelledby="deleteHeading">
+        <h3 id="deleteHeading">Delete this task?</h3>
+        <p class="muted" id="deleteName"></p>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-ghost" id="deleteCancel">Cancel</button>
+          <button type="button" class="btn btn-danger" id="deleteConfirm">Delete</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+    <script src="./script.js"></script>
+  </body>
+</html>

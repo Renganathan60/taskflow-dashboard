@@ -1,24 +1,34 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-// No head() here: the home route inherits title/description/og/twitter from
-// __root.tsx, and ships no og:image so serve-time hosting can inject the
-// project's social preview (explicit og:image or latest screenshot).
 export const Route = createFileRoute("/")({
+  head: () => ({
+    meta: [
+      { title: "TaskFlow — Smart To-Do List" },
+      {
+        name: "description",
+        content:
+          "TaskFlow is a professional to-do dashboard: add, edit, filter and track tasks with priorities, due dates and localStorage persistence.",
+      },
+      { property: "og:title", content: "TaskFlow — Smart To-Do List" },
+      {
+        property: "og:description",
+        content:
+          "A responsive to-do list dashboard built with HTML, CSS and JavaScript. Tasks persist in your browser.",
+      },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ],
+  }),
   component: Index,
 });
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
+// The app itself is plain HTML/CSS/JS in public/app (index.html, style.css, script.js).
 function Index() {
   return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
-    </div>
+    <iframe
+      src="/app/index.html"
+      title="TaskFlow — Smart To-Do List"
+      style={{ position: "fixed", inset: 0, width: "100%", height: "100%", border: "none" }}
+    />
   );
 }
